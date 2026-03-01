@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جدول رواتب و أجور — الشركات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-title">
+                <div class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="18" rx="2" />
+                        <line x1="2" y1="9" x2="22" y2="9" />
+                        <line x1="9" y1="3" x2="9" y2="21" />
+                    </svg>
+                </div>
+                <h1>جدول رواتب و أجور</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h2>إدارة الشركات</h2>
+        <p>اختر شركة لعرض جدول الرواتب أو أضف شركة جديدة</p>
+    </section>
+
+    <!-- Company Grid -->
+    <section class="company-grid-section">
+        <div class="grid-header">
+            <span id="companyCount">0 شركات</span>
+            <button class="btn btn-primary" id="addCompanyBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                إضافة شركة
+            </button>
+        </div>
+        <div class="company-grid" id="companyGrid">
+            <!-- Cards inserted by JS -->
+        </div>
+        <div class="empty-state" id="emptyState" style="display:none">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <rect x="2" y="7" width="20" height="14" rx="2" />
+                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+            </svg>
+            <h3>لا توجد شركات بعد</h3>
+            <p>أضف شركتك الأولى للبدء</p>
+            <button class="btn btn-primary" onclick="openModal()">
+                إضافة شركة
+            </button>
+        </div>
+    </section>
+
+    <!-- Add Company Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">إضافة شركة جديدة</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editCompanyId" value="">
+                <div class="form-group">
+                    <label>إسم المؤسسة / الشركة</label>
+                    <input type="text" id="compName" class="input-field" placeholder="إسم الشركة" autofocus>
+                </div>
+                <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+                    <div class="form-group">
+                        <label>الرقم المالي</label>
+                        <input type="text" id="compFinancial" class="input-field" placeholder="الرقم المالي">
+                    </div>
+                    <div class="form-group">
+                        <label>رقم الضمان</label>
+                        <input type="text" id="compSocial" class="input-field" placeholder="رقم الضمان">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" id="modalCancel">إلغاء</button>
+                <button class="btn btn-primary" id="modalSave">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================================
+        // Home Page Logic
+        // ============================================================
+        let companies = [];
+
+        async function api(url, method = 'GET', body = null) {
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (body) opts.body = JSON.stringify(body);
+            const res = await fetch(url, opts);
+            return res.json();
+        }
+
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = `toast ${type} show`;
+            setTimeout(() => { t.className = 'toast'; }, 2500);
+        }
+
+        async function loadCompanies() {
+            companies = await api('/api/companies');
+            renderCompanies();
+        }
+
+        function renderCompanies() {
+            const grid = document.getElementById('companyGrid');
+            const empty = document.getElementById('emptyState');
+            const count = document.getElementById('companyCount');
+
+            count.textContent = `${companies.length} شركات`;
+
+            if (companies.length === 0) {
+                grid.style.display = 'none';
+                empty.style.display = 'flex';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            empty.style.display = 'none';
+            grid.innerHTML = '';
+
+            companies.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'company-card';
+                card.innerHTML = `
+                <div class="company-card-body" onclick="window.location='/company/${c.id}'">
+                    <div class="company-card-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                        </svg>
+                    </div>
+                    <h3 class="company-card-name">${c.name || 'بدون اسم'}</h3>
+                    <div class="company-card-meta">
+                        <span>${c.financial_number ? 'مالي: ' + c.financial_number : ''}</span>
+                        <span>${c.social_security_number ? 'ضمان: ' + c.social_security_number : ''}</span>
+                    </div>
+                    <div class="company-card-badge">
+                        ${c.period_count || 0} فترات
+                    </div>
+                </div>
+                <div class="company-card-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editCompany(${c.id})" title="تعديل">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteCompany(${c.id})" title="حذف">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14H7L5 6"/>
+                        </svg>
+                    </button>
+                </div>
+            `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Modal
+        function openModal(companyId = null) {
+            document.getElementById('editCompanyId').value = companyId || '';
+            if (companyId) {
+                const c = companies.find(x => x.id === companyId);
+                document.getElementById('modalTitle').textContent = 'تعديل الشركة';
+                document.getElementById('compName').value = c.name || '';
+                document.getElementById('compFinancial').value = c.financial_number || '';
+                document.getElementById('compSocial').value = c.social_security_number || '';
+            } else {
+                document.getElementById('modalTitle').textContent = 'إضافة شركة جديدة';
+                document.getElementById('compName').value = '';
+                document.getElementById('compFinancial').value = '';
+                document.getElementById('compSocial').value = '';
+            }
+            document.getElementById('modalOverlay').classList.add('active');
+            setTimeout(() => document.getElementById('compName').focus(), 100);
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        async function saveCompany() {
+            const name = document.getElementById('compName').value.trim();
+            if (!name) { showToast('يرجى إدخال اسم الشركة', 'error'); return; }
+
+            const payload = {
+                name,
+                financial_number: document.getElementById('compFinancial').value.trim(),
+                social_security_number: document.getElementById('compSocial').value.trim(),
+            };
+
+            const editId = document.getElementById('editCompanyId').value;
+            if (editId) {
+                await api(`/api/companies/${editId}`, 'PUT', payload);
+                showToast('تم تحديث الشركة');
+            } else {
+                await api('/api/companies', 'POST', payload);
+                showToast('تم إضافة الشركة بنجاح');
+            }
+            closeModal();
+            await loadCompanies();
+        }
+
+        function editCompany(id) {
+            openModal(id);
+        }
+
+        async function deleteCompany(id) {
+            if (!confirm('هل أنت متأكد من حذف هذه الشركة؟ سيتم حذف جميع البيانات المرتبطة بها.')) return;
+            await api(`/api/companies/${id}`, 'DELETE');
+            showToast('تم حذف الشركة');
+            await loadCompanies();
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadCompanies();
+            document.getElementById('addCompanyBtn').addEventListener('click', () => openModal());
+            document.getElementById('modalClose').addEventListener('click', closeModal);
+            document.getElementById('modalCancel').addEventListener('click', closeModal);
+            document.getElementById('modalSave').addEventListener('click', saveCompany);
+            document.getElementById('modalOverlay').addEventListener('click', e => {
+                if (e.target === e.currentTarget) closeModal();
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') closeModal();
+                if (e.key === 'Enter' && document.getElementById('modalOverlay').classList.contains('active')) saveCompany();
+            });
+        });
+    </script>
+</body>
+
+</html>

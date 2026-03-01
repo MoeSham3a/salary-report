@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جدول رواتب و أجور</title>
+    <meta name="description" content="نظام إدارة الرواتب والأجور - حساب الضمان الاجتماعي والضرائب">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-title">
+                <div class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="18" rx="2"/>
+                        <line x1="2" y1="9" x2="22" y2="9"/>
+                        <line x1="9" y1="3" x2="9" y2="21"/>
+                    </svg>
+                </div>
+                <h1>جدول رواتب و أجور</h1>
+            </div>
+            <div class="header-actions">
+                <div class="report-controls">
+                    <select id="reportType" class="select-input">
+                        <option value="quarter">تقرير فصلي</option>
+                        <option value="year">تقرير سنوي</option>
+                    </select>
+                    <button class="btn btn-accent" id="downloadReport">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        تحميل التقرير
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Company Info Bar -->
+    <section class="company-bar">
+        <div class="company-field">
+            <label>إسم المؤسسة</label>
+            <input type="text" id="companyName" class="input-field" placeholder="إسم المؤسسة / الشركة">
+        </div>
+        <div class="company-field">
+            <label>الرقم المالي</label>
+            <input type="text" id="financialNumber" class="input-field" placeholder="الرقم المالي">
+        </div>
+        <div class="company-field">
+            <label>رقم الضمان</label>
+            <input type="text" id="socialSecurityNumber" class="input-field" placeholder="رقم الضمان">
+        </div>
+        <div class="company-field small">
+            <label>الفصل</label>
+            <select id="companyQuarter" class="select-input">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+        </div>
+        <div class="company-field small">
+            <label>السنة</label>
+            <input type="number" id="companyYear" class="input-field" value="2026" min="2020" max="2050">
+        </div>
+    </section>
+
+    <!-- Summary Dashboard -->
+    <section class="dashboard">
+        <div class="card card-salary">
+            <div class="card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+            </div>
+            <div class="card-info">
+                <span class="card-label">مجموع الرواتب</span>
+                <span class="card-value" id="totalSalaries">0</span>
+            </div>
+        </div>
+        <div class="card card-contributions">
+            <div class="card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+                </svg>
+            </div>
+            <div class="card-info">
+                <span class="card-label">عدد الموظفين</span>
+                <span class="card-value" id="totalEmployees">0</span>
+            </div>
+        </div>
+        <div class="card card-tax">
+            <div class="card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                </svg>
+            </div>
+            <div class="card-info">
+                <span class="card-label">الضريبة المتوجبة</span>
+                <span class="card-value" id="totalTax">0</span>
+            </div>
+        </div>
+        <div class="card card-transport">
+            <div class="card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                    <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+            </div>
+            <div class="card-info">
+                <span class="card-label">بدل النقل</span>
+                <span class="card-value" id="totalTransport">0</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Employee Table -->
+    <section class="table-section">
+        <div class="table-header">
+            <h2>بيانات الموظفين</h2>
+            <button class="btn btn-primary" id="addEmployeeBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                إضافة موظف
+            </button>
+        </div>
+        <div class="table-wrapper">
+            <table id="employeeTable">
+                <thead>
+                    <tr>
+                        <th class="col-actions">إجراءات</th>
+                        <th class="col-num">رقم</th>
+                        <th class="col-name">اسم الأجير</th>
+                        <th class="col-date">تاريخ بدء العمل</th>
+                        <th class="col-toggle">اجنبي</th>
+                        <th class="col-toggle">متزوج</th>
+                        <th class="col-small">عدد الأولاد</th>
+                        <th class="col-money">الراتب الشهري</th>
+                        <th class="col-money computed">مجموع الرواتب</th>
+                        <th class="col-money computed">نهاية الخدمة 8.5%</th>
+                        <th class="col-money computed">تعويضات عائلية 6%</th>
+                        <th class="col-money computed">المرض والامومة 11%</th>
+                        <th class="col-money computed">مجموع الاشتراكات</th>
+                        <th class="col-money computed">التعويضات العائلية</th>
+                        <th class="col-money computed">الفرق المستحق</th>
+                        <th class="col-money computed">التنزيل العائلي</th>
+                        <th class="col-money computed">المبلغ الخاضع</th>
+                        <th class="col-money computed">الضريبة</th>
+                        <th class="col-money computed">بدل نقل</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTableBody">
+                    <!-- Rows inserted by JS -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Summary Table -->
+    <section class="summary-section" id="summarySection">
+        <h2>ملخص الرواتب</h2>
+        <div class="summary-grid">
+            <div class="summary-row">
+                <span class="summary-label">مجموع الرواتب</span>
+                <span class="summary-value" id="sum_salaries">0</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">المنافع النقدية والعينية</span>
+                <span class="summary-value" id="sum_benefits">0</span>
+            </div>
+            <div class="summary-row highlight">
+                <span class="summary-label">مجموع المبالغ المدفوعة</span>
+                <span class="summary-value" id="sum_total_paid">0</span>
+            </div>
+            <div class="summary-row negative">
+                <span class="summary-label">تعويضات نقل وانتقال</span>
+                <span class="summary-value" id="sum_transport">0</span>
+            </div>
+            <div class="summary-row negative">
+                <span class="summary-label">التعويضات العائلية</span>
+                <span class="summary-value" id="sum_family">0</span>
+            </div>
+            <div class="summary-row highlight">
+                <span class="summary-label">مجموع الرواتب</span>
+                <span class="summary-value" id="sum_net">0</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">التنزيل العائلي</span>
+                <span class="summary-value" id="sum_deductions">0</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">المبلغ الخاضع</span>
+                <span class="summary-value" id="sum_taxable">0</span>
+            </div>
+            <div class="summary-row highlight accent">
+                <span class="summary-label">الضريبة المتوجبة</span>
+                <span class="summary-value" id="sum_tax_due">0</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Add Employee Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>إضافة موظف جديد</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>اسم الأجير</label>
+                    <input type="text" id="empName" class="input-field" placeholder="اسم الموظف" autofocus>
+                </div>
+                <div class="form-group">
+                    <label>تاريخ بدء العمل</label>
+                    <input type="date" id="empStartDate" class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>الراتب الشهري (ل.ل)</label>
+                    <input type="number" id="empSalary" class="input-field" placeholder="0" min="0">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>اجنبي</label>
+                        <select id="empForeign" class="select-input">
+                            <option value="no">لا</option>
+                            <option value="yes">نعم</option>
+                            <option value="F">F</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>متزوج</label>
+                        <select id="empMarried" class="select-input">
+                            <option value="no">لا</option>
+                            <option value="yes">نعم</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>عدد الأولاد</label>
+                        <input type="number" id="empChildren" class="input-field" value="0" min="0" max="20">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" id="modalCancel">إلغاء</button>
+                <button class="btn btn-primary" id="modalSave">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
